@@ -1,0 +1,98 @@
+
+# Constants
+# --------------------------------------------------------------
+
+@title = "gg"
+@description = "A website documenting gg, a css framework."
+@page = 'index'
+@venders = ['jquery.js', 'underscore.js', 'jquery.fittext.js']
+
+# _
+# --------------------------------------------------------------
+
+ArrayP = Array.prototype
+
+_ = {}
+_ =
+  identity: (v) -> v
+
+  sortedIndex: (array, obj, iterator = _.identity) ->
+    low = 0
+    high = array.length;
+    while low < high
+      mid = (low + high) >> 1;
+      if iterator(array[mid]) < iterator(obj) then low = mid + 1 else high = mid;
+    low
+
+  indexOf: (array, item, isSorted) ->
+    return -1 unless array?
+    if isSorted
+      i = _.sortedIndex array, item
+      return if array[i] == item then i else -1
+
+    if (ArrayP.indexOf && array.indexOf == ArrayP.indexOf)
+      return array.indexOf item
+
+    for v, i in array
+      if v == item
+        return i;
+    -1;
+
+
+# Helpers
+# --------------------------------------------------------------
+
+addVender = (venders = @venders) ->
+  script src: "vender/#{vender}" for vender in venders
+
+# Template
+# --------------------------------------------------------------
+
+doctype 5
+html ->
+  head ->
+    meta charset: 'utf-8'
+    title "#{@title or 'Untitled'} | The endgame of css frameworks"
+    meta(name: 'description', content: @description) if @description?
+
+    # Add all vender scripts
+    addVender @venders
+
+    # Link/Script to this page
+    link rel: 'stylesheet', href: "styles/#{@page}.css"
+    script src: "scripts/#{@page}.js"
+
+    # Normalize
+    link rel: 'stylesheet', href: "vender/normalize.css"
+
+    # gg
+    link rel: 'stylesheet', href: "vender/gg.css"
+
+
+
+  body ->
+
+    div class:'gg', ->
+
+      h1 class: 'title', "WORK IN PROGRESS"
+
+      div class:'subtitle', "evan gets a minimaly viable website up fast"
+
+
+      # div class: 'gg50', ->
+      h2 "Projects"
+      a class:'p', href:'http://evanmoran.com/gg', "gg - a css grid framework"
+
+      h2 "Source"
+
+      a class:'p', href:'http://github.com/evanmoran/quick', "http://github.com/evanmoran/quick"
+      a class:'p', href:'http://github.com/evanmoran/smite', "http://github.com/evanmoran/smite"
+
+      # div class: 'gg50', ->
+      h2 "Contact"
+      p ->
+        a href:"https://twitter.com/evanmoran", class:"twitter-follow-button", "data-show-count":"false", "data-lang":"en", "Follow @evanmoran"
+
+
+
+
