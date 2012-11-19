@@ -76,7 +76,7 @@ html ->
 
       h1 class: 'title', "WORK IN PROGRESS"
 
-      div class:'subtitle', "evan gets a minimaly viable website up fast"
+      div class:'subtitle', "evan gets a minimally viable website up fast"
 
       # div class: 'gg50', ->
       h2 "Finished"
