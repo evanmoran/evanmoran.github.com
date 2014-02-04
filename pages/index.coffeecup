@@ -80,21 +80,20 @@ html ->
 
       # div class: 'gg50', ->
       h2 "Finished"
+      a class:'p', href:'http://ojjs.org', "OJ – A JavaScript library to create websites with objects"
       a class:'p', href:'http://evanmoran.com/gg', "gg – The end game of css frameworks"
+      a class:'p', href:'http://github.com/evanmoran/repeat', "repeat – command repetition at its finest"
 
       h2 "Almost Finished "
-      a class:'p', href:'http://github.com/evanmoran/repeat', "repeat – command repetition at its finest"
+      a class:'p', href:'http://github.com/evanmoran/act', "act – A lightweight animation engine for the web"
       a class:'p', href:'http://github.com/evanmoran/quick', "quick – help when you want it"
-      a class:'p', href:'http://github.com/evanmoran/composite', "composite – HTML5 canvas compositing"
       a class:'p', href:'http://github.com/evanmoran/queryfu', "queryfu – An abstract query builder for ninjas"
 
       h2 "Unfinished"
-
-      a class:'p', href:'http://github.com/evanmoran/act', "act – A lightweight animation engine for the web"
+      a class:'p', href:'http://github.com/evanmoran/composite', "composite – HTML5 canvas compositing"
       a class:'p', href:'http://github.com/evanmoran/smite', "SMITE – a node.js web framework with hammers"
 
       h2 "Config Files"
-
       a class:'p', href:'http://github.com/evanmoran/.files', "http://github.com/evanmoran/.files"
 
       # div class: 'gg50', ->
