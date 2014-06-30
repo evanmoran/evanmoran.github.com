@@ -258,7 +258,8 @@ module.exports = (data) ->
           snapTolerance: snapTolerance
           stop: ->
             if dragTargetInTolerance $('.logo').position(), $('.logo_snap').position()
-              transitionLogo()
+              if transitions.sphere
+                transitionLogo()
           drag: ->
             updateImagePosition 'logo', $('.logo').position()
 
