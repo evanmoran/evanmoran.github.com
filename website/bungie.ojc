@@ -184,6 +184,7 @@ module.exports = (data) ->
         transitions =
           logo: false
           sphere: false
+          text: 0
 
         delay = (time, cb) ->
           setTimeout(cb,time)
@@ -195,23 +196,29 @@ module.exports = (data) ->
         $('.easy').hide()
         $('.accept').hide()
 
+        transitionText = ->
+          if transitions.text == 0
+            $('.choices').fadeOut fadeSpeed, ->
+              delay fadeSpeed/2, ->
+                $('.easy').fadeIn fadeSpeed
+          else if transitions.text == 1
+            $('.easy').fadeOut fadeSpeed, ->
+              delay fadeSpeed/2, ->
+                $('.accept').fadeIn fadeSpeed
+          transitions.text++
+
         transitionSphere = ->
           transitions.sphere = true
           $('.sphere').draggable("destroy")
           $('.sphere').css('cursor','default')
-
-          $('.choices').fadeOut fadeSpeed, ->
-            delay fadeSpeed/2, ->
-              $('.easy').fadeIn fadeSpeed
+          transitionText()
 
         transitionLogo = ->
           transitions.logo = true
           stopGlow = true
           $('.logo').draggable("destroy")
           $('.logo').css('cursor','default')
-          $('.easy').fadeOut fadeSpeed, ->
-            delay fadeSpeed/2, ->
-              $('.accept').fadeIn fadeSpeed
+          transitionText()
 
         imageSizeChanged = (e, instance) ->
           for name in imageNames
@@ -234,7 +241,7 @@ module.exports = (data) ->
 
         updateImagePosition = (name, bodyPosition) ->
           worldPosition = worldPositionFromBodyPosition bodyPosition, (scaledSizeOfImage name)
-          console.log "worldPosition: ", worldPosition
+          # console.log "worldPosition: ", worldPosition
           imageInfo[name].position = worldPosition
 
         dragTargetInTolerance = (pos, posTarget, tolerance = 5) ->
@@ -258,8 +265,7 @@ module.exports = (data) ->
           snapTolerance: snapTolerance
           stop: ->
             if dragTargetInTolerance $('.logo').position(), $('.logo_snap').position()
-              if transitions.sphere
-                transitionLogo()
+              transitionLogo()
           drag: ->
             updateImagePosition 'logo', $('.logo').position()
 
