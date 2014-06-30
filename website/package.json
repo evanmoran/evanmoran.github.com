@@ -1,0 +1,11 @@
+{
+  "name": "project-name",
+  "version": "0.0.0",
+  "dependencies": {
+    "underscore": "latest",
+    "backbone": "latest",
+    "oj-markdown": "latest",
+    "oj-twitter-button": "latest",
+    "oj-youtube-video": "latest"
+  }
+}
