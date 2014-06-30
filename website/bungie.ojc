@@ -1,0 +1,292 @@
+###
+bungie.ojc: Bungie mini-game
+###
+
+modules = require './modules/all.ojc'
+
+module.exports = (data) ->
+
+  doctype 5
+
+  html ->
+    head ->
+      title 'Bungie'
+
+      script src:'modules/all.js',
+        type:'text/javascript'
+
+      script src:'scripts/jquery-ui.min.js',
+        type:'text/javascript'
+
+      link href:'scripts/jquery-ui.min.css',
+        rel:'stylesheet', type:'text/css'
+
+      script src:'scripts/jquery.backstretch.min.js',
+        type:'text/javascript'
+
+    body ->
+      div c:'choices'
+      div c:'easy'
+      div c:'accept'
+      div c:'sphere'
+      div c:'logo'
+      div c:'sphere_snap'
+      div c:'logo_snap'
+
+      onload ->
+
+        fadeSpeed = 500
+        $.backstretch 'media/destiny_bg.jpg', speed:1, centeredY: false
+
+        imageNames = ['choices', 'easy', 'sphere', 'logo', 'accept', 'logo_snap', 'sphere_snap']
+
+        imageInfo =
+          bg:
+            size:
+              width:1440
+              height:900
+          choices:
+            size:
+              width:396
+              height:75
+            position:
+              x: 0.5
+              y: 0.07087102760380422
+          easy:
+            size:
+              width:543
+              height:32
+            position:
+              x: 0.5
+              y: 0.8344404078459514
+          accept:
+            size:
+              width:556
+              height:59
+            position:
+              x: 0.5
+              y: 0.5080915111828729
+          sphere:
+            size:
+              width:255
+              height:255
+            position:
+              x: 0.4999945633263744
+              y: 0.6444589422407794
+          sphere_snap:
+            size:
+              width:255
+              height:255
+            position:
+              x: 0.4979676847865088
+              y: 0.2827749372084679
+          logo:
+            size:
+              width:119
+              height:108
+            position:
+              x: 0.6244580492764024
+              y: 0.5107541711517761
+
+          logo_snap:
+            size:
+              width:119
+              height:108
+            position:
+              x: 0.4993234959933022
+              y: 0.6506895855758881
+
+
+
+        bodySize = ->
+          size =
+            width: $('.backstretch').width()
+            height: $('.backstretch').height()
+
+        bgRatio = ->
+          currentWidth = $('body').data('backstretch').$img.width()
+          originalWidth = imageInfo.bg.size.width
+          currentWidth / originalWidth
+
+        scaledSizeOfImage = (name) ->
+          ratio = bgRatio()
+          size =
+            width: ratio * imageInfo[name].size.width
+            height: ratio * imageInfo[name].size.height
+
+        # Calculate top, left position in body coordinates from world coordinates
+        # World is represented as 0-1 centered in middle
+        # Body is repreasented in pixals from top/left
+        bodyPositionFromWorldPosition = (worldPosition, scaledSize) ->
+          cameraSize = bodySize()
+          aspectRatio = imageInfo.bg.size.width / imageInfo.bg.size.height
+          cameraRatio = cameraSize.width / cameraSize.height
+          if aspectRatio >= cameraRatio  # Width is cropped
+            #              (The width without crop)        - (the width after crop)
+            widthMissing = cameraSize.height * aspectRatio - cameraSize.width
+            aspectSize =
+              width:  cameraSize.width + widthMissing
+              height: cameraSize.height
+            bodyPosition =
+              left: worldPosition.x * aspectSize.width - widthMissing/2 - scaledSize.width/2.0
+              top: worldPosition.y * aspectSize.height - scaledSize.height/2.0
+
+          else # Height is cropped
+            #              (The height without crop)       - (the height after crop)
+            heightMissing = cameraSize.width / aspectRatio - cameraSize.height
+            aspectSize =
+              width:  cameraSize.width
+              height: cameraSize.height + heightMissing
+            bodyPosition =
+              left: worldPosition.x * aspectSize.width - scaledSize.width/2.0
+              top: worldPosition.y * aspectSize.height - scaledSize.height/2.0
+
+        worldPositionFromBodyPosition = (bodyPosition, scaledSize) ->
+          cameraSize = bodySize()
+
+          aspectRatio = imageInfo.bg.size.width / imageInfo.bg.size.height
+          cameraRatio = cameraSize.width / cameraSize.height
+          if aspectRatio >= cameraRatio  # Width is cropped
+            widthMissing = cameraSize.height * aspectRatio - cameraSize.width
+            aspectSize =
+              width:  cameraSize.width + widthMissing
+              height: cameraSize.height
+            worldPosition =
+              x: (bodyPosition.left + widthMissing / 2 + scaledSize.width / 2) / aspectSize.width
+              y: (bodyPosition.top + scaledSize.height / 2) / aspectSize.height
+
+          else # Height is cropped
+            heightMissing = cameraSize.width / aspectRatio - cameraSize.height
+            aspectSize =
+              width:  cameraSize.width
+              height: cameraSize.height + heightMissing
+            worldPosition =
+              x: (bodyPosition.left + scaledSize.width / 2) / aspectSize.width
+              y: (bodyPosition.top + scaledSize.height / 2) / aspectSize.height
+
+
+        transitions =
+          logo: false
+          sphere: false
+
+        # Start transition
+        $('.choices').fadeIn(fadeSpeed)
+        $('.easy').hide()
+        $('.accept').hide()
+
+        transitionSphere = ->
+          transitions.sphere = true
+          $('.sphere').draggable("destroy")
+          $('.sphere').css('cursor','default')
+
+          $('.choices').fadeOut fadeSpeed, ->
+            $('.easy').fadeIn fadeSpeed
+
+        transitionLogo = ->
+          transitions.logo = true
+          $('.logo').draggable("destroy")
+          $('.logo').css('cursor','default')
+          $('.easy').fadeOut fadeSpeed, ->
+            $('.accept').fadeIn fadeSpeed
+
+        imageSizeChanged = (e, instance) ->
+          ratio = bgRatio()
+          console.log "ratio: ", ratio
+
+          for name in imageNames
+            $name = $('.' + name)
+
+            # Set width and height
+            newSize = scaledSizeOfImage name
+            $name.width(newSize.width + 'px')
+            $name.height(newSize.height + 'px')
+
+            # Set position
+            newPosition = bodyPositionFromWorldPosition(imageInfo[name].position, newSize)
+            $name.css(newPosition)
+
+        $(window).resize (e) ->
+          imageSizeChanged(e, $('body').data('backstretch'))
+
+        $(window).on "backstretch.after", (e, instance, index) ->
+          imageSizeChanged(e, instance)
+
+        updateImagePosition = (name, bodyPosition) ->
+          imageInfo[name].position = worldPositionFromBodyPosition bodyPosition, (scaledSizeOfImage name)
+
+        dragTargetInTolerance = (pos, posTarget, tolerance = 5) ->
+          Math.abs(pos.left - posTarget.left) < tolerance and Math.abs(pos.top - posTarget.top) < tolerance
+
+        $( ".sphere" ).draggable
+          containment: ".backstretch"
+          snap:'.sphere_snap'
+          # snapMode: 'both'
+          scroll: false
+          snapTolerance: 10
+          stop: ->
+            if dragTargetInTolerance $('.sphere').position(), $('.sphere_snap').position()
+              transitionSphere()
+          drag: ->
+            updateImagePosition 'sphere', $('.sphere').position()
+
+        $( ".logo" ).draggable
+          containment: ".backstretch"
+          snap:'.logo_snap'
+          scroll: false
+          snapTolerance: 10
+          # snapMode: 'both'
+          stop: ->
+            if dragTargetInTolerance $('.logo').position(), $('.logo_snap').position()
+              transitionLogo()
+          drag: ->
+            updateImagePosition 'logo', $('.logo').position()
+
+        window.backgroundSize = ->
+          console.log($('body').data('backstretch'))
+
+      css
+        'body':
+          backgroundColor:'#000308'
+          overflow: 'hidden'
+
+        '.choices':
+          background:"url('media/destiny_choices.png') no-repeat center center"
+          backgroundSize: 'cover'
+          position: 'absolute'
+          zIndex:100
+
+        '.easy':
+          background:"url('media/destiny_easy.png') no-repeat center center"
+          backgroundSize: 'cover'
+          position: 'absolute'
+          zIndex:101
+
+        '.accept':
+          background:"url('media/destiny_accept.png') no-repeat center center"
+          backgroundSize: 'cover'
+          position: 'absolute'
+          zIndex:102
+
+        '.sphere':
+          background:"url('media/destiny_sphere.png') no-repeat center center"
+          backgroundSize: 'cover'
+          position: 'absolute'
+          cursor: 'move'
+          zIndex:200
+
+        '.logo':
+          background:"url('media/destiny_logo.png') no-repeat center center"
+          backgroundSize: 'cover'
+          cursor: 'move'
+          position: 'absolute'
+          zIndex:190
+
+        '.sphere_snap':
+          # backgroundColor:"rgba(255,255,0,0.2)"
+          position: 'absolute'
+          zIndex:100
+
+        '.logo_snap':
+          # backgroundColor:"rgba(255,0,0,0.2)"
+          position: 'absolute'
+          zIndex:100
