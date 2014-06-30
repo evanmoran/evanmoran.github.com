@@ -12,30 +12,26 @@ module.exports = (data) ->
     head ->
       title 'Bungie'
 
-      script src:'modules/all.js',
-        type:'text/javascript'
-
-      script src:'scripts/jquery-ui.min.js',
-        type:'text/javascript'
-
-      link href:'scripts/jquery-ui.min.css',
-        rel:'stylesheet', type:'text/css'
-
-      script src:'scripts/jquery.backstretch.min.js',
-        type:'text/javascript'
+      script src:'modules/all.js', type:'text/javascript'
+      script src:'scripts/jquery-ui.min.js', type:'text/javascript'
+      link href:'scripts/jquery-ui.min.css', rel:'stylesheet', type:'text/css'
+      script src:'scripts/jquery.backstretch.min.js', type:'text/javascript'
+      script src:'scripts/jquery-ui.touch-punch.min.js', type:'text/javascript'
 
     body ->
       div c:'choices'
       div c:'easy'
       div c:'accept'
-      div c:'sphere'
-      div c:'logo'
+      div c:'sphere', _div c:'glow'
+      div c:'logo', _div c:'glow'
       div c:'sphere_snap'
       div c:'logo_snap'
 
       onload ->
 
         fadeSpeed = 500
+        glowSpeed = 800
+        glowOpacity = 0.9
         $.backstretch 'media/destiny_bg.jpg', speed:1, centeredY: false
 
         imageNames = ['choices', 'easy', 'sphere', 'logo', 'accept', 'logo_snap', 'sphere_snap']
@@ -68,35 +64,49 @@ module.exports = (data) ->
               y: 0.5080915111828729
           sphere:
             size:
-              width:255
-              height:255
+              width:276
+              height:276
             position:
               x: 0.4999945633263744
               y: 0.6444589422407794
           sphere_snap:
             size:
-              width:255
-              height:255
+              width:276
+              height:276
             position:
-              x: 0.4979676847865088
-              y: 0.2827749372084679
+              x: 0.49760708258884256
+              y: 0.28327675203494146
           logo:
             size:
-              width:119
-              height:108
+              width:135
+              height:124
             position:
               x: 0.6244580492764024
               y: 0.5107541711517761
 
           logo_snap:
             size:
-              width:119
-              height:108
+              width:135
+              height:124
             position:
-              x: 0.4993234959933022
-              y: 0.6506895855758881
+              x: 0.49937752299649263
+              y: 0.6517821454569519
 
+        stopGlow = false
 
+        # Glow when triggered
+        bindFadeCycle = (name) ->
+          $('.' + name + ' > .glow').bind 'fade-cycle', ->
+            $(@).fadeTo glowSpeed, glowOpacity, ->
+              $(@).fadeOut glowSpeed, ->
+                if not transitions[name]
+                  $(@).trigger 'fade-cycle'
+
+        bindFadeCycle 'sphere'
+        bindFadeCycle 'logo'
+
+        $('.glow').each (index, elem) ->
+          setTimeout (-> $(elem).trigger('fade-cycle')), index * 700
 
         bodySize = ->
           size =
@@ -116,7 +126,7 @@ module.exports = (data) ->
 
         # Calculate top, left position in body coordinates from world coordinates
         # World is represented as 0-1 centered in middle
-        # Body is repreasented in pixals from top/left
+        # Body is represented in pixels from top/left
         bodyPositionFromWorldPosition = (worldPosition, scaledSize) ->
           cameraSize = bodySize()
           aspectRatio = imageInfo.bg.size.width / imageInfo.bg.size.height
@@ -164,10 +174,12 @@ module.exports = (data) ->
               x: (bodyPosition.left + scaledSize.width / 2) / aspectSize.width
               y: (bodyPosition.top + scaledSize.height / 2) / aspectSize.height
 
-
         transitions =
           logo: false
           sphere: false
+
+        delay = (time, cb) ->
+          setTimeout(cb,time)
 
         # Start transition
         $('.choices').fadeIn(fadeSpeed)
@@ -180,19 +192,19 @@ module.exports = (data) ->
           $('.sphere').css('cursor','default')
 
           $('.choices').fadeOut fadeSpeed, ->
-            $('.easy').fadeIn fadeSpeed
+            delay fadeSpeed/2, ->
+              $('.easy').fadeIn fadeSpeed
 
         transitionLogo = ->
           transitions.logo = true
+          stopGlow = true
           $('.logo').draggable("destroy")
           $('.logo').css('cursor','default')
           $('.easy').fadeOut fadeSpeed, ->
-            $('.accept').fadeIn fadeSpeed
+            delay fadeSpeed/2, ->
+              $('.accept').fadeIn fadeSpeed
 
         imageSizeChanged = (e, instance) ->
-          ratio = bgRatio()
-          console.log "ratio: ", ratio
-
           for name in imageNames
             $name = $('.' + name)
 
@@ -212,7 +224,9 @@ module.exports = (data) ->
           imageSizeChanged(e, instance)
 
         updateImagePosition = (name, bodyPosition) ->
-          imageInfo[name].position = worldPositionFromBodyPosition bodyPosition, (scaledSizeOfImage name)
+          worldPosition = worldPositionFromBodyPosition bodyPosition, (scaledSizeOfImage name)
+          console.log "worldPosition: ", worldPosition
+          imageInfo[name].position = worldPosition
 
         dragTargetInTolerance = (pos, posTarget, tolerance = 5) ->
           Math.abs(pos.left - posTarget.left) < tolerance and Math.abs(pos.top - posTarget.top) < tolerance
@@ -220,7 +234,6 @@ module.exports = (data) ->
         $( ".sphere" ).draggable
           containment: ".backstretch"
           snap:'.sphere_snap'
-          # snapMode: 'both'
           scroll: false
           snapTolerance: 10
           stop: ->
@@ -234,7 +247,6 @@ module.exports = (data) ->
           snap:'.logo_snap'
           scroll: false
           snapTolerance: 10
-          # snapMode: 'both'
           stop: ->
             if dragTargetInTolerance $('.logo').position(), $('.logo_snap').position()
               transitionLogo()
@@ -273,6 +285,13 @@ module.exports = (data) ->
           position: 'absolute'
           cursor: 'move'
           zIndex:200
+          '& > .glow':
+            background:"url('media/destiny_sphere_glow.png') no-repeat center center"
+            backgroundSize: 'cover'
+            width: '100%'
+            height: '100%'
+            position: 'relative'
+            display: 'none'
 
         '.logo':
           background:"url('media/destiny_logo.png') no-repeat center center"
@@ -280,13 +299,18 @@ module.exports = (data) ->
           cursor: 'move'
           position: 'absolute'
           zIndex:190
+          '& > .glow':
+            background:"url('media/destiny_logo_glow.png') no-repeat center center"
+            backgroundSize: 'cover'
+            width: '100%'
+            height: '100%'
+            position: 'relative'
+            display: 'none'
 
         '.sphere_snap':
-          # backgroundColor:"rgba(255,255,0,0.2)"
           position: 'absolute'
           zIndex:100
 
         '.logo_snap':
-          # backgroundColor:"rgba(255,0,0,0.2)"
           position: 'absolute'
           zIndex:100
