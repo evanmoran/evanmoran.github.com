@@ -29,9 +29,16 @@ module.exports = (data) ->
 
       onload ->
 
+        # Prevent scrolling in ios
+        document.ontouchstart = (e) ->
+          e.preventDefault()
+        document.ontouchmove = (e) ->
+          e.preventDefault()
+
         fadeSpeed = 500
         glowSpeed = 800
         glowOpacity = 0.9
+        snapTolerance = 20
         $.backstretch 'media/destiny_bg.jpg', speed:1, centeredY: false
 
         imageNames = ['choices', 'easy', 'sphere', 'logo', 'accept', 'logo_snap', 'sphere_snap']
@@ -182,7 +189,9 @@ module.exports = (data) ->
           setTimeout(cb,time)
 
         # Start transition
-        $('.choices').fadeIn(fadeSpeed)
+        $('.choices').hide()
+        delay fadeSpeed, ->
+          $('.choices').fadeIn(fadeSpeed)
         $('.easy').hide()
         $('.accept').hide()
 
@@ -235,7 +244,7 @@ module.exports = (data) ->
           containment: ".backstretch"
           snap:'.sphere_snap'
           scroll: false
-          snapTolerance: 10
+          snapTolerance: snapTolerance
           stop: ->
             if dragTargetInTolerance $('.sphere').position(), $('.sphere_snap').position()
               transitionSphere()
@@ -246,7 +255,7 @@ module.exports = (data) ->
           containment: ".backstretch"
           snap:'.logo_snap'
           scroll: false
-          snapTolerance: 10
+          snapTolerance: snapTolerance
           stop: ->
             if dragTargetInTolerance $('.logo').position(), $('.logo_snap').position()
               transitionLogo()
