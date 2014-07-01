@@ -35,9 +35,9 @@ module.exports = (data) ->
         document.ontouchmove = (e) ->
           e.preventDefault()
 
-        fadeSpeed = 800
+        fadeSpeed = 850
         glowSpeed = 800
-        glowOpacity = 0.9
+        glowOpacity = 0.75
         snapTolerance = 20
         $.backstretch 'media/destiny_bg.jpg', speed:1, centeredY: false
 
