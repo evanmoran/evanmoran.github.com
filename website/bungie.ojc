@@ -35,7 +35,7 @@ module.exports = (data) ->
         document.ontouchmove = (e) ->
           e.preventDefault()
 
-        fadeSpeed = 500
+        fadeSpeed = 800
         glowSpeed = 800
         glowOpacity = 0.9
         snapTolerance = 20
